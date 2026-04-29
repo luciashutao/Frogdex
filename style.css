@@ -130,6 +130,10 @@ h1 {
   z-index: 10;
 }
 
+#tutorial-modal {
+  background: rgba(0, 0, 0, 0.92);
+}
+
 .hidden {
   display: none;
 }
@@ -254,6 +258,34 @@ h1 {
 
 .tutorial-card {
   text-align: center;
+}
+
+.tutorial-sprite {
+  width: 128px;
+  height: 128px;
+  background-image: url("tutorial/tutorial_frog.png");
+  background-repeat: no-repeat;
+  background-size: auto 128px;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  margin: 0 auto 8px;
+}
+
+.tutorial-sprite.talking {
+  animation: tutorialTalk 0.56s steps(7) infinite;
+}
+
+@keyframes tutorialTalk {
+  from { background-position: 0 0; }
+  to   { background-position: -896px 0; }
+}
+
+.tutorial-tap {
+  font-size: 22px;
+  color: #7d2dff;
+  margin: 8px 0 16px;
+  animation: blink 0.9s step-end infinite;
+  cursor: pointer;
 }
 
 .tutorial-lines {

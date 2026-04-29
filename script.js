@@ -81,39 +81,39 @@ function playTone(freq, duration, type = "square", gainVal = 0.15, delay = 0) {
   osc.stop(audioCtx.currentTime + delay + duration);
 }
 
-function soundOpen() {
-  playTone(330, 0.1);
-  playTone(440, 0.12, "square", 0.12, 0.08);
-  playTone(550, 0.15, "square", 0.1, 0.16);
+function soundOpen(special = false) {
+  playSfx("sfx_ui_window_open.wav", 0.7);
+  if (special) {
+    [330, 440, 550, 660, 880].forEach((f, i) => playTone(f, 0.18, "square", 0.12, i * 0.06));
+  }
 }
 
 function soundClose() {
-  playTone(440, 0.09, "square", 0.1);
-  playTone(300, 0.12, "square", 0.08, 0.07);
+  playSfx("sfx_ui_window_close.wav", 0.7);
 }
 
 function soundRegister(special = false) {
-  if (special) {
-    [330, 440, 550, 660, 880].forEach((f, i) => playTone(f, 0.18, "square", 0.13, i * 0.07));
-  } else {
-    playTone(440, 0.1);
-    playTone(550, 0.15, "square", 0.12, 0.1);
-  }
+  playSfx("sfx_ui_click.wav", special ? 1.0 : 0.7, special ? 0.2 : 0);
 }
 
 function soundHover(found, special) {
-  if (special) {
-    playTone(660, 0.06, "sine", 0.06);
-  } else if (found) {
-    playTone(440, 0.05, "sine", 0.05);
-  } else {
-    playTone(220, 0.04, "square", 0.04);
-  }
+  playSfx("sfx_ui_hover.wav", 3.0, special ? 0.15 : 0.05);
+}
+
+function soundVictory() {
+  const notes = [
+    [330, 0], [330, 0.1], [330, 0.2],
+    [262, 0.3], [330, 0.4], [392, 0.5],
+    [196, 0.75]
+  ];
+  notes.forEach(([freq, delay]) => playTone(freq, 0.18, "square", 0.18, delay));
+
+  // acorde final brillante
+  [523, 659, 784].forEach((f, i) => playTone(f, 0.5, "square", 0.14, 1.0 + i * 0.05));
 }
 
 function soundRemove() {
-  playTone(300, 0.08, "square", 0.1);
-  playTone(220, 0.12, "square", 0.08, 0.07);
+  playSfx("sfx_ui_click.wav", 0.5, 0);
 }
 
 const profesapo = {
@@ -240,7 +240,7 @@ acceptConfirm.addEventListener("click", () => {
   renderGrid();
   showReporter(`✔ Rana #${pendingFrog.id} registrada en la Frogdex.`, "success");
   soundRegister(pendingFrog.special);
-  reportProgress(foundFrogs.length, pendingFrog);
+  setTimeout(() => reportProgress(foundFrogs.length, pendingFrog), 3000);
   openFrogModal(pendingFrog);
 
   closeConfirmModal();
@@ -296,7 +296,7 @@ function openFrogModal(frog) {
     foundAtEl.style.display = foundAtStr ? "block" : "none";
 
     frogModal.classList.remove("hidden");
-    soundOpen();
+    soundOpen(frog.special);
 }
 
 function reportProgress(count, frog) {
@@ -318,7 +318,10 @@ function reportProgress(count, frog) {
     messages.push("40 ranas encontradas.");
   } else if (count === 50) {
     messages.push("Las 50 ranas han sido encontradas.");
-    setTimeout(() => victoryModal.classList.remove("hidden"), 2800);
+    setTimeout(() => {
+      victoryModal.classList.remove("hidden");
+      soundVictory();
+    }, 2800);
   }
 
   if (messages.length) {
@@ -335,7 +338,7 @@ function showReporter(message, type = "normal") {
 
   setTimeout(() => {
     reporterToast.classList.add("hidden");
-  }, 4500);
+  }, 6500);
 }
 
 document.querySelectorAll("[data-close-frog]").forEach((button) => {
@@ -354,6 +357,32 @@ document.getElementById("close-victory").addEventListener("click", () => {
   }, 300);
 });
 
+const sfx = {};
+
+["benignumcroak1.ogg", "sfx_ui_hover.wav", "sfx_ui_click.wav", "sfx_ui_window_open.wav", "sfx_ui_window_close.wav"].forEach(file => {
+  fetch(`sfx/${file}`)
+    .then(r => r.arrayBuffer())
+    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(decoded => { sfx[file] = decoded; });
+});
+
+function playSfx(file, volume = 1.0, pitchVariance = 0) {
+  const buf = sfx[file];
+  if (!buf) return;
+  const src = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  src.buffer = buf;
+  src.playbackRate.value = 1 + (Math.random() - 0.5) * pitchVariance;
+  gain.gain.value = volume;
+  src.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start();
+}
+
+function playCharCroak() {
+  playSfx("benignumcroak1.ogg", 0.35, 0.4);
+}
+
 const tutorialLines = [
   "Bienvenida a la Frogdex de la mazmorra.",
   "Hay 50 mini ranas escondidas.",
@@ -365,20 +394,32 @@ const tutorialLines = [
 function runTypewriter() {
   const container = document.getElementById("tutorial-lines");
   const startButton = document.getElementById("tutorial-start-button");
+  const sprite = document.getElementById("tutorial-sprite");
   container.innerHTML = "";
   startButton.classList.add("hidden");
 
   let lineIndex = 0;
+  let charsSinceLastCroak = 0;
 
   function typeLine(text, onDone) {
     const p = document.createElement("p");
     container.appendChild(p);
     let i = 0;
+    sprite.classList.add("talking");
     const interval = setInterval(() => {
-      p.textContent += text[i++];
+      const ch = text[i++];
+      p.textContent += ch;
+      if (ch !== " ") {
+        charsSinceLastCroak++;
+        if (charsSinceLastCroak >= 3) {
+          playCharCroak();
+          charsSinceLastCroak = 0;
+        }
+      }
       if (i >= text.length) {
         clearInterval(interval);
         p.classList.add("done");
+        sprite.classList.remove("talking");
         onDone();
       }
     }, 38);
@@ -387,6 +428,8 @@ function runTypewriter() {
   function nextLine() {
     if (lineIndex >= tutorialLines.length) {
       startButton.classList.remove("hidden");
+      startButton.addEventListener("mouseenter", () => playSfx("sfx_ui_hover.wav", 3.0), { passive: true });
+      startButton.addEventListener("click", () => playSfx("sfx_ui_click.wav", 0.9), { once: true });
       return;
     }
     typeLine(tutorialLines[lineIndex++], () => setTimeout(nextLine, 220));
@@ -396,7 +439,9 @@ function runTypewriter() {
 }
 
 document.querySelectorAll("[data-close-tutorial]").forEach((button) => {
+  button.addEventListener("mouseenter", () => playSfx("sfx_ui_hover.wav", 3.0), { passive: true });
   button.addEventListener("click", () => {
+    playSfx("sfx_ui_window_close.wav", 0.7);
     tutorialModal.classList.add("hidden");
     localStorage.setItem("tutorialSeen", "true");
   });
@@ -424,7 +469,14 @@ document.addEventListener("keydown", (e) => {
 
 if (!localStorage.getItem("tutorialSeen")) {
   tutorialModal.classList.remove("hidden");
-  runTypewriter();
+
+  const tapPrompt = document.getElementById("tutorial-tap");
+  tapPrompt.addEventListener("click", () => {
+    audioCtx.resume().then(() => {
+      tapPrompt.style.display = "none";
+      runTypewriter();
+    });
+  }, { once: true });
 }
 
 updateCounter();
