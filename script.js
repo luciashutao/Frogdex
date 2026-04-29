@@ -468,13 +468,13 @@ const normalFrogs = [
   },
   {
     id: 46,
-    name: "Sapo de Surinam plano",
-    type: "Sapo acuático",
+    name: "Rana cornuda vietnamita",
+    type: "Rana fosororial",
     rarity: "Poco común",
-    location: "Norte de América del Sur",
+    location: "Sudeste Asiático",
     image: "images/frog-46.png",
-    description: "Prima pequeña del Sapo de Surinam. Igual de plana, igual de extraña, pero más discreta.",
-    fact: "Pasa toda su vida bajo el agua. Sus pulmones son tan pequeños que si intenta salir a la superficie se marea."
+    description: "Su hocico alargado y puntiagudo la hace inconfundible. Parece sacada de un cuento de terror.",
+    fact: "La punta de su nariz actúa como hoja para desplazarse entre la hojarasca. Es básicamente un cuchillo con patas."
   },
   {
     id: 48,
