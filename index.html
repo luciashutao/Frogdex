@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Die in the Dungeon - Frogdex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+15&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <p class="eyebrow">Die in the Dungeon</p>
+      <h1>Frogdex</h1>
+      <p class="subtitle">Encuentra las 50 mini ranas escondidas en la mazmorra.</p>
+
+      <div class="counter">
+        <span id="found-count">0</span> / 50 encontradas
+      </div>
+
+      <button id="reset-button" class="small-button">Resetear progreso</button>
+    </header>
+
+    <section id="frog-grid" class="frog-grid"></section>
+  </main>
+
+  <div id="tutorial-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close-button" data-close-tutorial>×</button>
+      <h2>🐸 Profesapo</h2>
+      <p>
+        Bienvenida a la Frogdex de la mazmorra.
+        Hay 50 mini ranas escondidas.
+      </p>
+      <p>
+        Algunas son ranas del mundo real.
+        Otras pertenecen a esta mazmorra.
+      </p>
+      <p>
+        Toca una rana para registrarla y desbloquear su ficha.
+      </p>
+      <button class="main-button" data-close-tutorial>Empezar búsqueda</button>
+    </div>
+  </div>
+
+  <div id="frog-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close-button" data-close-frog>×</button>
+      <img id="frog-image" class="frog-image" src="" alt="" />
+      <p id="frog-rarity" class="rarity"></p>
+      <h2 id="frog-name"></h2>
+      <p id="frog-type"></p>
+      <p id="frog-location"></p>
+      <p id="frog-description"></p>
+      <p id="frog-fact" class="fact"></p>
+      <button id="remove-frog" class="small-button danger-button">
+        Quitar rana de la frogdex
+    </button>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal hidden">
+  <div class="modal-card confirm-card">
+    <h2>🐸 ¿Registrar rana?</h2>
+    <p id="confirm-text">
+      ¿Quieres marcar esta rana como encontrada en la Frogdex?
+    </p>
+
+    <div class="confirm-actions">
+      <button id="cancel-confirm" class="small-button danger-button">
+        Todavía no
+      </button>
+      <button id="accept-confirm" class="main-button">
+        Sí, registrar
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div id="reporter-toast" class="reporter hidden">
+    <strong>📰 Frog Reporter</strong>
+    <p id="reporter-message"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
