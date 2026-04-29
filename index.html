@@ -55,6 +55,7 @@
       <p id="frog-location"></p>
       <p id="frog-description"></p>
       <p id="frog-fact" class="fact"></p>
+      <p id="frog-found-at" class="found-at"></p>
       <button id="remove-frog" class="small-button danger-button">
         Quitar rana de la frogdex
     </button>
@@ -78,6 +79,16 @@
     </div>
   </div>
 </div>
+
+  <div id="victory-modal" class="modal hidden">
+    <div class="modal-card victory-card">
+      <h2>🏆 ¡Frogdex completa!</h2>
+      <p>Has encontrado las 50 ranas de la mazmorra.</p>
+      <p>Profesapo está... impresionado. No era fácil.</p>
+      <p class="victory-hint">Pero espera... ¿hay alguien más esperando?</p>
+      <button class="main-button" id="close-victory">Ver la sorpresa</button>
+    </div>
+  </div>
 
   <div id="reporter-toast" class="reporter hidden">
     <strong>📰 Frog Reporter</strong>

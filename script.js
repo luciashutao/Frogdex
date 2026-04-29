@@ -66,6 +66,68 @@ for (let id = 1; id <= 50; id++) {
   }
 }
 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, duration, type = "square", gainVal = 0.15, delay = 0) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+  gain.gain.setValueAtTime(gainVal, audioCtx.currentTime + delay);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+  osc.start(audioCtx.currentTime + delay);
+  osc.stop(audioCtx.currentTime + delay + duration);
+}
+
+function soundOpen() {
+  playTone(330, 0.1);
+  playTone(440, 0.12, "square", 0.12, 0.08);
+  playTone(550, 0.15, "square", 0.1, 0.16);
+}
+
+function soundClose() {
+  playTone(440, 0.09, "square", 0.1);
+  playTone(300, 0.12, "square", 0.08, 0.07);
+}
+
+function soundRegister(special = false) {
+  if (special) {
+    [330, 440, 550, 660, 880].forEach((f, i) => playTone(f, 0.18, "square", 0.13, i * 0.07));
+  } else {
+    playTone(440, 0.1);
+    playTone(550, 0.15, "square", 0.12, 0.1);
+  }
+}
+
+function soundHover(found, special) {
+  if (special) {
+    playTone(660, 0.06, "sine", 0.06);
+  } else if (found) {
+    playTone(440, 0.05, "sine", 0.05);
+  } else {
+    playTone(220, 0.04, "square", 0.04);
+  }
+}
+
+function soundRemove() {
+  playTone(300, 0.08, "square", 0.1);
+  playTone(220, 0.12, "square", 0.08, 0.07);
+}
+
+const profesapo = {
+  id: 0,
+  name: "Profesapo",
+  type: "Rana legendaria secreta",
+  rarity: "Única",
+  location: "La mazmorra entera",
+  image: "images/placeholder-frog.png",
+  description: "El guardián de la Frogdex. Te ha estado observando desde el principio.",
+  fact: "Dice que tiene algo para ti... pero que aún no es el momento.",
+  special: true
+};
+
 const removeFrogButton = document.getElementById("remove-frog");
 const grid = document.getElementById("frog-grid");
 const foundCount = document.getElementById("found-count");
@@ -80,8 +142,25 @@ const acceptConfirm = document.getElementById("accept-confirm");
 
 let pendingFrog = null;
 let currentFrog = null;
+const victoryModal = document.getElementById("victory-modal");
 
-let foundFrogs = JSON.parse(localStorage.getItem("foundFrogs")) || [];
+let foundFrogs = (() => {
+  const raw = JSON.parse(localStorage.getItem("foundFrogs")) || [];
+  // migrar formato antiguo (array de números) al nuevo (array de objetos)
+  return raw.map(entry => typeof entry === "number" ? { id: entry, foundAt: null } : entry);
+})();
+
+function isFound(id) { return foundFrogs.some(e => e.id === id); }
+function getFoundAt(id) { return foundFrogs.find(e => e.id === id)?.foundAt ?? null; }
+
+function formatFoundAt(isoString) {
+  if (!isoString) return null;
+  const d = new Date(isoString);
+  return d.toLocaleString("es-ES", {
+    day: "numeric", month: "long", year: "numeric",
+    hour: "2-digit", minute: "2-digit"
+  });
+}
 
 function saveProgress() {
   localStorage.setItem("foundFrogs", JSON.stringify(foundFrogs));
@@ -94,18 +173,21 @@ function updateCounter() {
 function renderGrid() {
   grid.innerHTML = "";
 
-  frogs.forEach((frog) => {
+  const allFrogs = localStorage.getItem("profesapoUnlocked") ? [profesapo, ...frogs] : frogs;
+
+  allFrogs.forEach((frog) => {
     const button = document.createElement("button");
     button.className = "frog-card";
 
     if (frog.special) button.classList.add("special");
-    if (foundFrogs.includes(frog.id)) button.classList.add("found");
+    if (frog.id === 0) button.classList.add("profesapo");
+    if (isFound(frog.id)) button.classList.add("found");
 
     button.innerHTML = `
   <span class="frog-number">#${frog.id}</span>
   <span class="frog-icon">
     ${
-      foundFrogs.includes(frog.id)
+      isFound(frog.id)
         ? (frog.special ? "✨" : "🐸")
         : "?"
     }
@@ -113,13 +195,18 @@ function renderGrid() {
 `;
 
     button.addEventListener("click", () => findFrog(frog));
+
+    if (window.matchMedia("(hover: hover)").matches) {
+      button.addEventListener("mouseenter", () => soundHover(isFound(frog.id), frog.special));
+    }
+
     grid.appendChild(button);
   });
 }
 
 //Finding a frog now also checks if it's already found, and if so, just opens the modal without asking to mark it again.
 function findFrog(frog) {
-  const wasAlreadyFound = foundFrogs.includes(frog.id);
+  const wasAlreadyFound = isFound(frog.id);
 
   if (wasAlreadyFound) {
     openFrogModal(frog);
@@ -147,10 +234,12 @@ cancelConfirm.addEventListener("click", closeConfirmModal);
 acceptConfirm.addEventListener("click", () => {
   if (!pendingFrog) return;
 
-  foundFrogs.push(pendingFrog.id);
+  foundFrogs.push({ id: pendingFrog.id, foundAt: new Date().toISOString() });
   saveProgress();
   updateCounter();
   renderGrid();
+  showReporter(`✔ Rana #${pendingFrog.id} registrada en la Frogdex.`, "success");
+  soundRegister(pendingFrog.special);
   reportProgress(foundFrogs.length, pendingFrog);
   openFrogModal(pendingFrog);
 
@@ -160,9 +249,9 @@ acceptConfirm.addEventListener("click", () => {
 removeFrogButton.addEventListener("click", () => {
   if (!currentFrog) return;
 
-  if (!foundFrogs.includes(currentFrog.id)) return;
+  if (!isFound(currentFrog.id)) return;
 
-  foundFrogs = foundFrogs.filter(id => id !== currentFrog.id);
+  foundFrogs = foundFrogs.filter(e => e.id !== currentFrog.id);
 
   saveProgress();
   updateCounter();
@@ -170,15 +259,16 @@ removeFrogButton.addEventListener("click", () => {
 
   frogModal.classList.add("hidden");
 
-  showReporter("Corrección realizada. La rana ha sido eliminada del registro.");
+  soundRemove();
+  showReporter(`✖ Rana #${currentFrog.id} eliminada del registro.`, "danger");
 });
 
 function openFrogModal(frog) {
-    currentFrog = frog; // 🔥 ESTO ES CLAVE
+    currentFrog = frog; 
 
     const modalCard = document.querySelector("#frog-modal .modal-card");
 
-    if (foundFrogs.includes(frog.id)) {
+    if (isFound(frog.id)) {
         removeFrogButton.textContent = "Quitar rana";
         removeFrogButton.disabled = false;
     } else {
@@ -200,7 +290,13 @@ function openFrogModal(frog) {
     document.getElementById("frog-description").textContent = frog.description;
     document.getElementById("frog-fact").textContent = `Dato: ${frog.fact}`;
 
+    const foundAtEl = document.getElementById("frog-found-at");
+    const foundAtStr = formatFoundAt(getFoundAt(frog.id));
+    foundAtEl.textContent = foundAtStr ? `Encontrada el ${foundAtStr}` : "";
+    foundAtEl.style.display = foundAtStr ? "block" : "none";
+
     frogModal.classList.remove("hidden");
+    soundOpen();
 }
 
 function reportProgress(count, frog) {
@@ -222,6 +318,7 @@ function reportProgress(count, frog) {
     messages.push("40 ranas encontradas.");
   } else if (count === 50) {
     messages.push("Las 50 ranas han sido encontradas.");
+    setTimeout(() => victoryModal.classList.remove("hidden"), 2800);
   }
 
   if (messages.length) {
@@ -229,7 +326,10 @@ function reportProgress(count, frog) {
   }
 }
 
-function showReporter(message) {
+function showReporter(message, type = "normal") {
+  reporterToast.classList.remove("success", "danger", "normal");
+  reporterToast.classList.add(type);
+
   reporterMessage.textContent = message;
   reporterToast.classList.remove("hidden");
 
@@ -239,7 +339,19 @@ function showReporter(message) {
 }
 
 document.querySelectorAll("[data-close-frog]").forEach((button) => {
-  button.addEventListener("click", () => frogModal.classList.add("hidden"));
+  button.addEventListener("click", () => {
+    frogModal.classList.add("hidden");
+    soundClose();
+  });
+});
+
+document.getElementById("close-victory").addEventListener("click", () => {
+  victoryModal.classList.add("hidden");
+  localStorage.setItem("profesapoUnlocked", "true");
+  renderGrid();
+  setTimeout(() => {
+    showReporter("🐸 ¡Profesapo ha aparecido en el grid!");
+  }, 300);
 });
 
 document.querySelectorAll("[data-close-tutorial]").forEach((button) => {
@@ -252,9 +364,21 @@ document.querySelectorAll("[data-close-tutorial]").forEach((button) => {
 document.getElementById("reset-button").addEventListener("click", () => {
   foundFrogs = [];
   saveProgress();
+  localStorage.removeItem("profesapoUnlocked");
   updateCounter();
   renderGrid();
   showReporter("El caso ha sido reiniciado. Nadie recuerda nada. Excepto yo.");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.shiftKey && e.key === "F") {
+    foundFrogs = frogs.map(f => ({ id: f.id, foundAt: new Date().toISOString() }));
+    saveProgress();
+    updateCounter();
+    renderGrid();
+    showReporter("🛠 Modo test: todas las ranas marcadas.");
+    reportProgress(50, frogs[frogs.length - 1]);
+  }
 });
 
 if (!localStorage.getItem("tutorialSeen")) {

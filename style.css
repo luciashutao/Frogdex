@@ -144,6 +144,10 @@ h1 {
   position: relative;
   font-size: 24px;
 }
+.modal-card.special {
+  background: linear-gradient(180deg, #f5df9b, #e6c76f);
+  box-shadow: 0 0 12px gold, 8px 8px 0 #000;
+}
 
 .modal-card h2 {
   font-size: 44px;
@@ -168,6 +172,7 @@ h1 {
   image-rendering: pixelated;
   background: #1b2418;
   border: 4px solid #000;
+  
 }
 
 .rarity {
@@ -180,6 +185,12 @@ h1 {
   background: #fff2bf;
   border: 3px solid #000;
   padding: 10px;
+}
+
+.found-at {
+  font-size: 18px;
+  color: #888;
+  margin-top: 6px;
 }
 
 @keyframes slideIn {
@@ -203,6 +214,27 @@ h1 {
 
 .reporter p {
   margin: 6px 0 0;
+}
+
+@media (hover: hover) {
+  .frog-card:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow: 5px 9px 0 #000;
+    z-index: 1;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .frog-card.special:hover {
+    box-shadow: 0 0 18px gold, 5px 9px 0 #000;
+  }
+
+  .frog-card.found:hover {
+    background: #82d458;
+  }
+
+  .frog-card.special.found:hover {
+    background: #c9aaff;
+  }
 }
 
 @media (max-width: 600px) {
@@ -253,4 +285,56 @@ h1 {
   0% { transform: scale(1); }
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+.reporter.success {
+  background: #c8ffb8;
+}
+
+.reporter.danger {
+  background: #ffb8b8;
+}
+
+.reporter.normal {
+  background: #ffffff;
+}
+
+.victory-card {
+  text-align: center;
+  background: linear-gradient(160deg, #fffbe6, #ffe066);
+  box-shadow: 0 0 24px gold, 8px 8px 0 #000;
+  animation: victoryPulse 1.2s ease infinite alternate;
+}
+
+.victory-card h2 {
+  font-size: 48px;
+  color: #7d2dff;
+  text-shadow:
+    -3px -3px 0 #000,
+     3px -3px 0 #000,
+    -3px  3px 0 #000,
+     3px  3px 0 #000;
+}
+
+.victory-hint {
+  font-size: 22px;
+  color: #555;
+  font-style: italic;
+}
+
+@keyframes victoryPulse {
+  from { box-shadow: 0 0 16px gold, 8px 8px 0 #000; }
+  to   { box-shadow: 0 0 36px gold, 8px 8px 0 #000; }
+}
+
+.frog-card.profesapo {
+  background: #1b0a30;
+  border-color: #b8a0ff;
+  box-shadow: 0 0 14px #b8a0ff, 5px 5px 0 #000;
+  animation: profesapoPulse 2s ease infinite alternate;
+}
+
+@keyframes profesapoPulse {
+  from { box-shadow: 0 0 10px #b8a0ff, 5px 5px 0 #000; }
+  to   { box-shadow: 0 0 24px #c8b8ff, 5px 5px 0 #000; }
 }
