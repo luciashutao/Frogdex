@@ -354,6 +354,47 @@ document.getElementById("close-victory").addEventListener("click", () => {
   }, 300);
 });
 
+const tutorialLines = [
+  "Bienvenida a la Frogdex de la mazmorra.",
+  "Hay 50 mini ranas escondidas.",
+  "Algunas son del mundo real.",
+  "Otras pertenecen a esta mazmorra.",
+  "Toca una rana para registrarla y desbloquear su ficha."
+];
+
+function runTypewriter() {
+  const container = document.getElementById("tutorial-lines");
+  const startButton = document.getElementById("tutorial-start-button");
+  container.innerHTML = "";
+  startButton.classList.add("hidden");
+
+  let lineIndex = 0;
+
+  function typeLine(text, onDone) {
+    const p = document.createElement("p");
+    container.appendChild(p);
+    let i = 0;
+    const interval = setInterval(() => {
+      p.textContent += text[i++];
+      if (i >= text.length) {
+        clearInterval(interval);
+        p.classList.add("done");
+        onDone();
+      }
+    }, 38);
+  }
+
+  function nextLine() {
+    if (lineIndex >= tutorialLines.length) {
+      startButton.classList.remove("hidden");
+      return;
+    }
+    typeLine(tutorialLines[lineIndex++], () => setTimeout(nextLine, 220));
+  }
+
+  nextLine();
+}
+
 document.querySelectorAll("[data-close-tutorial]").forEach((button) => {
   button.addEventListener("click", () => {
     tutorialModal.classList.add("hidden");
@@ -383,6 +424,7 @@ document.addEventListener("keydown", (e) => {
 
 if (!localStorage.getItem("tutorialSeen")) {
   tutorialModal.classList.remove("hidden");
+  runTypewriter();
 }
 
 updateCounter();
