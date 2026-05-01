@@ -5,7 +5,7 @@ const specialFrogs = [
     type: "Rana especial de la mazmorra",
     rarity: "Legendaria",
     location: "Die in the Dungeon",
-    image: "images/cinder.png",
+    image: "gif/cinder_gif.gif",
     description: "Una presencia ardiente que marca el camino.",
     fact: "Una de las protagonistas especiales de esta Frogdex.",
     special: true
@@ -16,7 +16,7 @@ const specialFrogs = [
     type: "Rana especial de la mazmorra",
     rarity: "Legendaria",
     location: "Die in the Dungeon",
-    image: "images/lisver.png",
+    image: "gif/lisver_gif.gif",
     description: "Silenciosa, precisa y difícil de ignorar.",
     fact: "Su ficha debería sentirse elegante y misteriosa.",
     special: true
@@ -27,7 +27,7 @@ const specialFrogs = [
     type: "Rana especial de la mazmorra",
     rarity: "Legendaria",
     location: "Die in the Dungeon",
-    image: "images/mango.png",
+    image: "gif/mango_gif.gif",
     description: "Impredecible, brillante y peligrosamente encantadora.",
     fact: "Probablemente no estaba siguiendo el plan.",
     special: true
@@ -38,7 +38,7 @@ const specialFrogs = [
     type: "Rana especial de la mazmorra",
     rarity: "Legendaria",
     location: "Die in the Dungeon",
-    image: "images/nera.png",
+    image: "gif/nera_gif.gif",
     description: "Pupila de Cinder. Sigue sus pasos por la mazmorra.",
     fact: "Todavía hay mucho misterio alrededor de ella.",
     special: true
@@ -645,6 +645,15 @@ function renderGrid() {
     const button = document.createElement("button");
     button.className = "frog-card";
 
+    const rarityClass = {
+      "Común": "rarity-comun",
+      "Poco común": "rarity-poco-comun",
+      "Rara": "rarity-rara",
+      "Épica": "rarity-epica",
+      "Legendaria": "rarity-legendaria",
+      "Única": "rarity-unica"
+    }[frog.rarity];
+    if (rarityClass) button.classList.add(rarityClass);
     if (frog.special) button.classList.add("special");
     if (frog.id === 0) button.classList.add("profesapo");
     if (isFound(frog.id)) button.classList.add("found");
@@ -682,7 +691,7 @@ function findFrog(frog) {
   pendingFrog = frog;
 
   if (frog.special) {
-    confirmText.textContent = `⚠️ Esta rana es diferente... ¿Registrar a ${frog.name}?`;
+    confirmText.textContent = `⚠️ Esta rana es diferente... ¿Registrarla en la Frogdex?`;
   } else {
     confirmText.textContent = `¿Quieres registrar la rana #${frog.id} en la Frogdex?`;
   }
@@ -704,7 +713,7 @@ acceptConfirm.addEventListener("click", () => {
   saveProgress();
   updateCounter();
   renderGrid();
-  showReporter(`✔ Rana #${pendingFrog.id} registrada en la Frogdex.`, "success");
+  showReporter(`✔ ${pendingFrog.name} registrada en la Frogdex.`, "success");
   soundRegister(pendingFrog.special);
   setTimeout(() => reportProgress(foundFrogs.length, pendingFrog), 3000);
   openFrogModal(pendingFrog);
@@ -749,7 +758,13 @@ function openFrogModal(frog) {
 
     document.getElementById("frog-image").src = frog.image;
     document.getElementById("frog-image").alt = frog.name;
-    document.getElementById("frog-rarity").textContent = `Rareza: ${frog.rarity}`;
+    const rarityEl = document.getElementById("frog-rarity");
+    if (isFound(frog.id)) {
+      rarityEl.textContent = `Rareza: ${frog.rarity}`;
+      rarityEl.style.display = "block";
+    } else {
+      rarityEl.style.display = "none";
+    }
     document.getElementById("frog-name").textContent = frog.name;
     document.getElementById("frog-type").textContent = `Tipo: ${frog.type}`;
     document.getElementById("frog-location").textContent = `Vive en: ${frog.location}`;
@@ -773,17 +788,17 @@ function reportProgress(count, frog) {
   }
 
   if (count === 1) {
-    messages.push("Primera rana encontrada.");
+    messages.push("Primera rana encontrada. Todo bajo control.");
   } else if (count === 5) {
-    messages.push("Ya van 5 ranas.");
+    messages.push("5 ranas. Siguen apareciendo.");
   } else if (count === 10) {
-    messages.push("10 ranas localizadas.");
+    messages.push("10 ranas encontradas. Esto no puede ser casualidad.");
   } else if (count === 25) {
-    messages.push("Mitad del caso resuelta.");
+    messages.push("Mitad de las ranas localizadas. ¿Quién ha hecho esto?");
   } else if (count === 40) {
-    messages.push("40 ranas encontradas.");
+    messages.push("40 ranas. Alguien tenía mucho tiempo libre.");
   } else if (count === 50) {
-    messages.push("Las 50 ranas han sido encontradas.");
+    messages.push("Las 50 ranas han sido encontradas. Solo alguien como Jaun Gardener podría completar esta misión.");
     setTimeout(() => {
       victoryModal.classList.remove("hidden");
       soundVictory();
@@ -795,7 +810,46 @@ function reportProgress(count, frog) {
   }
 }
 
+const reporterLog = [];
+
+function renderReporterLog() {
+  const list = document.getElementById("reporter-log-list");
+  const empty = document.getElementById("reporter-log-empty");
+  list.innerHTML = "";
+
+  if (reporterLog.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+  [...reporterLog].reverse().forEach(entry => {
+    const li = document.createElement("li");
+    li.className = entry.type;
+    li.innerHTML = `
+      <span>${entry.message}</span>
+      <span class="reporter-log-time">${entry.time}</span>
+    `;
+    list.appendChild(li);
+  });
+}
+
+document.getElementById("reporter-log-button").addEventListener("mouseenter", () => playSfx("sfx_ui_hover.wav", 3.0, 0, 1.6));
+document.getElementById("reporter-log-button").addEventListener("click", () => {
+  playSfx("sfx_ui_window_open.wav", 0.7);
+  renderReporterLog();
+  document.getElementById("reporter-log-modal").classList.remove("hidden");
+});
+
+document.getElementById("close-reporter-log").addEventListener("click", () => {
+  playSfx("sfx_ui_window_close.wav", 0.7);
+  document.getElementById("reporter-log-modal").classList.add("hidden");
+});
+
 function showReporter(message, type = "normal") {
+  const now = new Date().toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  reporterLog.push({ message, type, time: now });
+
   reporterToast.classList.remove("success", "danger", "normal");
   reporterToast.classList.add(type);
 
@@ -819,7 +873,7 @@ document.getElementById("close-victory").addEventListener("click", () => {
   localStorage.setItem("profesapoUnlocked", "true");
   renderGrid();
   setTimeout(() => {
-    showReporter("🐸 ¡Profesapo ha aparecido en el grid!");
+    showReporter("🐸 Algo nuevo ha aparecido en la Frogdex...");
   }, 300);
 });
 
@@ -832,13 +886,13 @@ const sfx = {};
     .then(decoded => { sfx[file] = decoded; });
 });
 
-function playSfx(file, volume = 1.0, pitchVariance = 0) {
+function playSfx(file, volume = 1.0, pitchVariance = 0, pitch = 1.0) {
   const buf = sfx[file];
   if (!buf) return;
   const src = audioCtx.createBufferSource();
   const gain = audioCtx.createGain();
   src.buffer = buf;
-  src.playbackRate.value = 1 + (Math.random() - 0.5) * pitchVariance;
+  src.playbackRate.value = pitch + (Math.random() - 0.5) * pitchVariance;
   gain.gain.value = volume;
   src.connect(gain);
   gain.connect(audioCtx.destination);
@@ -850,11 +904,12 @@ function playCharCroak() {
 }
 
 const tutorialLines = [
-  "Bienvenida a la Frogdex de la mazmorra.",
-  "Hay 50 mini ranas escondidas.",
-  "Algunas son del mundo real.",
-  "Otras pertenecen a esta mazmorra.",
-  "Toca una rana para registrarla y desbloquear su ficha."
+  "Bienvenida a la Frogdex.",
+  "Alguien ha escondido 50 mini ranas por la casa.",
+  "No sabemos por qué.",
+  "Pero ahora es tu problema.",
+  "Cuando encuentres una, regístrala aquí.",
+  "Buena suerte."
 ];
 
 let typewriterCancel = null;
@@ -947,6 +1002,15 @@ document.addEventListener("keydown", (e) => {
     renderGrid();
     showReporter("🛠 Modo test: todas las ranas marcadas.");
     reportProgress(50, frogs[frogs.length - 1]);
+  }
+
+  if (e.shiftKey && e.key === "T") {
+    const unfound = frogs.filter(f => !isFound(f.id)).slice(0, 10);
+    unfound.forEach(f => foundFrogs.push({ id: f.id, foundAt: new Date().toISOString() }));
+    saveProgress();
+    updateCounter();
+    renderGrid();
+    showReporter(`🛠 Modo test: ${unfound.length} ranas más marcadas.`);
   }
 
   if (e.shiftKey && e.key === "R") {

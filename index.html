@@ -82,8 +82,30 @@
     </div>
   </div>
 
+  <button id="reporter-log-button" class="reporter-log-button" title="Frog Reporter - Archivo">
+    <img src="reporter/Frog_Reporter.png" alt="Frog Reporter" style="width:38px;height:38px;image-rendering:pixelated;" />
+  </button>
+
+  <div id="reporter-log-modal" class="modal hidden">
+    <div class="modal-card reporter-log-card">
+      <button class="close-button" id="close-reporter-log">×</button>
+      <div class="reporter-log-header">
+        <img src="reporter/Frog_Reporter.png" class="reporter-log-face" alt="Frog Reporter" />
+        <div>
+          <h2>Frog Reporter</h2>
+          <p class="reporter-log-subtitle">Archivo de noticias</p>
+        </div>
+      </div>
+      <ul id="reporter-log-list" class="reporter-log-list"></ul>
+      <p id="reporter-log-empty" class="reporter-log-empty">Todavía no hay noticias que reportar.</p>
+    </div>
+  </div>
+
   <div id="reporter-toast" class="reporter hidden">
-    <strong>📰 Frog Reporter</strong>
+    <div class="reporter-header">
+      <img src="reporter/Frog_Reporter.png" class="reporter-face" alt="Frog Reporter" />
+      <strong>Frog Reporter</strong>
+    </div>
     <p id="reporter-message"></p>
   </div>
 
