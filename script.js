@@ -588,7 +588,7 @@ const profesapo = {
   type: "Rana legendaria secreta",
   rarity: "Única",
   location: "La mazmorra entera",
-  image: "images/placeholder-frog.png",
+  image: "profesapo-sprite",
   description: "El guardián de la Frogdex. Te ha estado observando desde el principio.",
   fact: "Dice que tiene algo para ti... pero que aún no es el momento.",
   special: true
@@ -756,8 +756,17 @@ function openFrogModal(frog) {
         modalCard.classList.remove("special");
     }
 
-    document.getElementById("frog-image").src = frog.image;
-    document.getElementById("frog-image").alt = frog.name;
+    const imgEl = document.getElementById("frog-image");
+    const spriteEl = document.getElementById("frog-sprite-profesapo");
+    if (frog.image === "profesapo-sprite") {
+      imgEl.style.display = "none";
+      spriteEl.style.display = "block";
+    } else {
+      imgEl.style.display = "block";
+      spriteEl.style.display = "none";
+      imgEl.src = frog.image;
+      imgEl.alt = frog.name;
+    }
     const rarityEl = document.getElementById("frog-rarity");
     if (isFound(frog.id)) {
       rarityEl.textContent = `Rareza: ${frog.rarity}`;

@@ -199,6 +199,33 @@ h1 {
   border: 4px solid #000;
 }
 
+.frog-sprite-profesapo-wrapper {
+  width: 100%;
+  height: 260px;
+  border: 4px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.frog-sprite-profesapo {
+  width: 300px;
+  height: 300px;
+  flex-shrink: 0;
+  background-image: url("tutorial/tutorial_frog.png");
+  background-repeat: no-repeat;
+  background-size: auto 300px;
+  background-position: 0 center;
+  image-rendering: pixelated;
+  animation: profesapoModalTalk 0.7s steps(7) infinite;
+}
+
+@keyframes profesapoModalTalk {
+  from { background-position: 0 center; }
+  to   { background-position: -2100px center; }
+}
+
 .rarity {
   color: #7d2dff;
   font-size: 24px;
