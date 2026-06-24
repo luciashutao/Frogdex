@@ -386,11 +386,11 @@ document.getElementById("reset-button").addEventListener("click", () => {
 document.addEventListener("keydown", (e) => {
   if (e.shiftKey && e.key === "F") {
     foundFrogs = frogs.map(f => ({ id: f.id, foundAt: new Date().toISOString() }));
+    localStorage.setItem("profesapoUnlocked", "true");
     saveProgress();
     updateCounter();
     renderGrid();
     showReporter("🛠 Modo test: todas las ranas marcadas.");
-    reportProgress(50, frogs[frogs.length - 1]);
   }
 
   if (e.shiftKey && e.key === "T") {
